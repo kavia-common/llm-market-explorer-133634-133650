@@ -10,15 +10,17 @@
  * @returns {Array<Object>} Array of LLM model objects
  */
 function getLLMCatalog() {
+  // We will enhance this by marking GPT-style models for special section extraction.
   return [
     {
       id: 'llm-1',
       name: 'OpenAI GPT-4',
       provider: 'OpenAI',
-      features: ['context-8k', 'cloud', 'api', 'fine-tuning'],
+      features: ['context-8k', 'cloud', 'api', 'fine-tuning', 'chatgpt'], // <-- add "chatgpt" tag for demo
       usability: ['easy integration', 'good docs'],
       cost: { pricingModel: 'per 1K tokens', price: 0.06, currency: 'USD' },
-      documentation_url: 'https://platform.openai.com/docs/guides/gpt'
+      documentation_url: 'https://platform.openai.com/docs/guides/gpt',
+      type: 'chatgpt' // add explicit type for clear logic (could also deduce via features/provider)
     },
     {
       id: 'llm-2',
@@ -29,17 +31,49 @@ function getLLMCatalog() {
       cost: { pricingModel: 'per 1M tokens', price: 8.00, currency: 'USD' },
       documentation_url: 'https://docs.anthropic.com/claude'
     }
-    // Add more mocks as required
+    // Add more mocks as required, real system would query DB
   ];
+}
+
+/**
+ * Get ChatGPT models for a dedicated sidebar section.
+ * Returns a list of LLMs classified as ChatGPT models.
+ * @returns {Array<Object>}
+ */
+function getChatGptModels() {
+  return getLLMCatalog().filter(
+    (llm) =>
+      // Mark as "ChatGPT" family if explicit type, or name/provider detection, or "chatgpt" feature
+      (llm.type && llm.type.toLowerCase().includes('chatgpt')) ||
+      (llm.features && Array.isArray(llm.features) && llm.features.map(f=>f.toLowerCase()).includes('chatgpt')) ||
+      (llm.name && llm.name.toLowerCase().includes('gpt')) // Expand logic as needed
+  );
 }
 
 /**
  * PUBLIC_INTERFACE
  * Returns the list of unique categories used to tag/categorize LLMs.
+ * Enhanced: Also returns { categories: [...], chatgpt: [...] }
+ * @returns {{categories: Array<string>, chatgpt: Array<Object>}}
+ */
+function getCategoriesComposite() {
+  // The regular categories list
+  const categories = ['cloud', 'on-premise', 'open-source', 'api', 'fine-tuning', 'chat-optimization', 'chatgpt'];
+  // The dedicated list of ChatGPT models
+  const chatgptModels = getChatGptModels();
+  return {
+    categories,
+    chatgpt: chatgptModels
+  };
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * Original for categories, deprecated but kept for backward compatibility.
  * @returns {Array<string>}
  */
 function getCategories() {
-  return ['cloud', 'on-premise', 'open-source', 'api', 'fine-tuning', 'chat-optimization'];
+  return ['cloud', 'on-premise', 'open-source', 'api', 'fine-tuning', 'chat-optimization', 'chatgpt'];
 }
 
 /**

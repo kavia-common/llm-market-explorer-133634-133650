@@ -62,11 +62,18 @@ exports.getLLMById = (req, res) => {
 /**
  * PUBLIC_INTERFACE
  * GET /categories
- * List all unique LLM categories/tags.
+ * List all unique LLM categories/tags, and, if requested, include a 'ChatGPT models' dedicated section.
+ * If the query param ?includeChatGpt=true is provided, returns {categories: [...], chatgpt: [...]}
  */
 exports.getCategories = (req, res) => {
-  const categories = llmDatabaseService.getCategories();
-  res.json(categories);
+  // To avoid breaking old API, default returns classic array. Use ?includeChatGpt=true for composite response.
+  if (req.query.includeChatGpt === 'true') {
+    const composite = llmDatabaseService.getCategoriesComposite();
+    res.json(composite);
+  } else {
+    const categories = llmDatabaseService.getCategories();
+    res.json(categories);
+  }
 };
 
 /**
